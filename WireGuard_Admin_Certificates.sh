@@ -261,6 +261,7 @@ while true; do
                 if [ "$KEY_VALID" = "true" ] && [ "$PUB_VALID" = "true" ]; then
                     echo " - Las claves existentes tienen el formato correcto."
                     echo " - No se realizara ninguna accion para evitar sobrescribirlas."
+                    echo " - NOTA: Elimine primero los ficheros $SERVER_KEY y $SERVER_PUB "
                 else
                     echo " - ALERTA: Las claves existentes tienen formato incorrecto."
                     read -p "¿Desea sobrescribirlas? [y/N]: " CONFIRM
@@ -305,7 +306,7 @@ while true; do
                     if [ "$(cat "$SERVER_KEY" | wg pubkey)" == "$(cat "$SERVER_PUB")" ]; then
                         echo " - OK: Las claves son CORRESPONDIENTES."
                     else
-                        echo " - ALERTA: Las claves NO CORRESPONDEN entre sí."
+                        echo " - ALERTA: Las claves NO CORRESPONDEN entre si."
                     fi
                 else
                     echo " - ERROR: No se pudieron crear las claves del servidor."
