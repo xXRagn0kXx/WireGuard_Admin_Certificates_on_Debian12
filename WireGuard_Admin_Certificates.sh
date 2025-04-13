@@ -50,22 +50,22 @@ while true; do
             if [ ! -d "$RUTA" ]; then
                 echo "No existe ningún dato con ese nombre del cliente '${USUARIO}'."
             else
-                KEY="${RUTA}/${USUARIO}.key"
-                PUB="${RUTA}/${USUARIO}.pub"
+                CLIENT_KEY="${RUTA}/${USUARIO}.key"
+                CLIENT_PUB="${RUTA}/${USUARIO}.pub"
 
-                if [ -f "$KEY" ] && [ -f "$PUB" ]; then
+                if [ -f "$CLIENT_KEY" ] && [ -f "$CLIENT_PUB" ]; then
                     echo "El cliente '${USUARIO}' ya tiene ficheros creados."
                     echo ""
 
                     # Verificar formato de la clave privada
-                    if grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$KEY" && [ $(wc -c < "$KEY") -eq 45 ]; then
+                    if grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$CLIENT_KEY" && [ $(wc -c < "$CLIENT_KEY") -eq 45 ]; then
                         echo " - OK: La clave PRIVADA tiene el formato correcto."
                     else
                         echo " - ALERTA:  La clave PRIVADA tiene un formato INCORRECTO."
                     fi
 
                     # Verificar formato de la clave publica
-                    if grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$PUB" && [ $(wc -c < "$PUB") -eq 45 ]; then
+                    if grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$CLIENT_PUB" && [ $(wc -c < "$CLIENT_PUB") -eq 45 ]; then
                         echo " - OK: La clave PUBLICA tiene el formato correcto."
                         echo ""
                     else
@@ -75,7 +75,7 @@ while true; do
 
                     # Verificar que la clave publica corresponde a la privada
                         echo "TOTAL:"
-                    if [ "$(cat "$KEY" | wg pubkey)" == "$(cat "$PUB")" ]; then
+                    if [ "$(cat "$CLIENT_KEY" | wg pubkey)" == "$(cat "$CLIENT_PUB")" ]; then
                         echo " - OK: Las claves son CORRESPONDIENTES (la publica deriva de la privada)."
                     else
                         echo " - ALERTA: Las claves NO CORRESPONDEN entre sí."
@@ -83,8 +83,8 @@ while true; do
                     fi
                 else
                     echo "Ficheros incorrectos para el cliente '${USUARIO}':"
-                    [ ! -f "$KEY" ] && echo "- Falta el fichero .key"
-                    [ ! -f "$PUB" ] && echo "- Falta el fichero .pub"
+                    [ ! -f "$CLIENT_KEY" ] && echo "- Falta el fichero .key"
+                    [ ! -f "$CLIENT_PUB" ] && echo "- Falta el fichero .pub"
                 fi
             fi
 
