@@ -4,7 +4,7 @@ while true; do
     clear
     echo ""
     echo "=============================================="
-    echo "    MENU DE GESTION DE CERTIFICADOS WIREGUARD     "
+    echo "    MENU ADMINISTRACION CERTIFICADOS WIREGUARD     "
     echo "=============================================="
     echo "1) Crear par de claves para cliente VPN"
     echo "2) Comprobar ficheros de cliente VPN"
@@ -31,11 +31,13 @@ while true; do
             fi
 
             RUTA="/etc/wireguard/clients/${USUARIO}"
+            echo " Creando la ruta para el cliente ${USUARIO} " 
             mkdir -p "$RUTA"
+            echo " Generando pares de claves... "
             wg genkey | tee "${RUTA}/${USUARIO}.key" > /dev/null
             cat "${RUTA}/${USUARIO}.key" | wg pubkey | tee "${RUTA}/${USUARIO}.pub" > /dev/null
 
-            echo "Se los pares de claves para el cliente '${USUARIO}' en la ruta ${RUTA}."
+            echo "Se crean los pares de claves para el cliente '${USUARIO}' en la ruta ${RUTA}."
             read -n1 -r -p "Presione [Enter] para continuar..."
             ;;
 
@@ -65,7 +67,7 @@ while true; do
                     if grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$CLIENT_KEY" && [ $(wc -c < "$CLIENT_KEY") -eq 45 ]; then
                         echo " - OK: La clave PRIVADA tiene el formato correcto."
                     else
-                        echo " - ALERTA:  La clave PRIVADA tiene un formato INCORRECTO."
+                        echo " - WARNING:  La clave PRIVADA tiene un formato INCORRECTO."
                     fi
 
                     # Verificar formato de la clave publica
@@ -73,16 +75,16 @@ while true; do
                         echo " - OK: La clave PUBLICA tiene el formato correcto."
                         echo ""
                     else
-                        echo " - ALERTA: La clave PUBLICA tiene un formato INCORRECTO."
+                        echo " - WARNING: La clave PUBLICA tiene un formato INCORRECTO."
                         echo ""
                     fi
 
                     # Verificar que la clave publica corresponde a la privada
                         echo "TOTAL:"
                     if [ "$(cat "$CLIENT_KEY" | wg pubkey)" == "$(cat "$CLIENT_PUB")" ]; then
-                        echo " - OK: Las claves son CORRESPONDIENTES (la publica deriva de la privada)."
+                        echo " - OK: Las claves son CORRESPONDIENTES (la publica corresponde con la privada)."
                     else
-                        echo " - ALERTA: Las claves NO CORRESPONDEN entre sí."
+                        echo " - WARNING: Las claves NO SE CORRESPONDEN."
                         echo ""
                     fi
                 else
@@ -99,7 +101,7 @@ while true; do
             read -p "Ingrese el nombre del cliente a borrar: " USUARIO
 
             if [ -z "$USUARIO" ]; then
-                echo "El nombre del cliente no puede estar vacío."
+                echo "El nombre del cliente no puede estar vacio."
                 read -n1 -r -p "Presione [Enter] para continuar..."
                 continue
             fi
@@ -110,7 +112,7 @@ while true; do
                 rm -rf "$RUTA"
                 echo "Ficheros del cliente '${USUARIO}' borrados correctamente."
             else
-                echo "Los ficheros del cliente '${USUARIO}' no existen o ya están borrados."
+                echo "Los ficheros del cliente '${USUARIO}' no existen o ya estan borrados."
             fi
 
             read -n1 -r -p "Presione [Enter] para continuar..."
