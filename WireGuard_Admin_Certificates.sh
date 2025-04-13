@@ -11,6 +11,7 @@ while true; do
     echo "3) Borrar par de claves del cliente VPN"
     echo "4) Comprobar par de claves del servidor VPN"
     echo "5) Crear par de claves del servidor VPN"
+    echo "6) Eliminar par de claves del servidor VPN"
     echo "0|quit|exit) Salir"
     echo "=============================================="
     echo ""
@@ -231,7 +232,8 @@ while true; do
             fi
 
             read -n1 -r -p "Presione [Enter] para continuar..."
-          ;;
+        ;;
+
         5)
             echo ""
             echo "Creando par de claves del servidor..."
@@ -316,6 +318,95 @@ while true; do
             read -n1 -r -p "Presione [Enter] para continuar..."
         ;;
 
+        6)
+            echo ""
+            echo "Borrando par de claves del servidor..."
+            echo ""
+
+            # Preguntar por los nombres de los ficheros con valores por defecto
+            read -p "Escribe el nombre del fichero .key (sin la extensión) alojado en la ruta /etc/wireguard/ [por defecto: server.key]: " KEY_NAME
+            read -p "Escribe el nombre del fichero .pub (sin la extensión) alojado en la ruta /etc/wireguard/ [por defecto: server.pub]: " PUB_NAME
+
+            # Establecer valores por defecto si el usuario no introduce nada
+            KEY_NAME=${KEY_NAME:-server}
+            PUB_NAME=${PUB_NAME:-server}
+
+            SERVER_KEY="/etc/wireguard/${KEY_NAME}.key"
+            SERVER_PUB="/etc/wireguard/${PUB_NAME}.pub"
+
+            if [ -f "$SERVER_KEY" ] && [ -f "$SERVER_PUB" ]; then
+                echo ""
+                echo "Los ficheros de claves del servidor existen:"
+                echo "- Clave privada: $SERVER_KEY"
+                echo "- Clave pública: $SERVER_PUB"
+                echo ""
+
+                # Verificar formato de la clave privada
+                if grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$SERVER_KEY" && [ $(wc -c < "$SERVER_KEY") -eq 45 ]; then
+                    echo " - OK: La clave PRIVADA tiene el formato correcto."
+                else
+                    echo " - ALERTA: La clave PRIVADA tiene un formato INCORRECTO."
+                fi
+
+                # Verificar formato de la clave publica
+                if grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$SERVER_PUB" && [ $(wc -c < "$SERVER_PUB") -eq 45 ]; then
+                    echo " - OK: La clave PUBLICA tiene el formato correcto."
+                    echo ""
+                else
+                    echo " - ALERTA: La clave PUBLICA tiene un formato INCORRECTO."
+                    echo ""
+                fi
+
+                # Verificar que la clave publica corresponde a la privada
+                echo "TOTAL:"
+                if [ "$(cat "$SERVER_KEY" | wg pubkey)" == "$(cat "$SERVER_PUB")" ]; then
+                    echo " - OK: Las claves son CORRESPONDIENTES (la publica deriva de la privada)."
+                else
+                    echo " - ALERTA: Las claves NO CORRESPONDEN entre sí."
+                    echo ""
+                fi
+
+                # Pedir confirmación especial para borrar
+                echo ""
+                echo "ADVERTENCIA: Si borras estas claves:"
+                echo "- Los clientes vinculados no podrán volver a conectarse"
+                echo "- La configuración actual del servidor dejará de funcionar"
+                echo "- Necesitarás generar nuevas claves y reconfigurar todos los clientes"
+                echo ""
+                read -p "¿Está ABSOLUTAMENTE seguro de que desea borrar estos pares de claves? Escriba DELETE y presione Enter para confirmar: " CONFIRM
+
+                if [ "$CONFIRM" == "DELETE" ]; then
+                    echo "Editando permisos para poder eliminar..."
+                    chmod 777 "$SERVER_KEY" "$SERVER_PUB"
+                    echo "Eliminando $SERVER_KEY y $SERVER_PUB"
+                    rm -f "$SERVER_KEY" "$SERVER_PUB"
+                    if [ $? -eq 0 ]; then
+                        echo ""
+                        echo "Las claves han sido eliminadas permanentemente:"
+                        echo "- $SERVER_KEY"
+                        echo "- $SERVER_PUB"
+                        echo ""
+                        echo "ADVERTENCIA: Ahora necesitarás:"
+                        echo "1. Generar nuevas claves (opción 5)"
+                        echo "2. Actualizar la configuración de WireGuard"
+                        echo "3. Reconfigurar TODOS los clientes con las nuevas claves"
+                    else
+                        echo "Error al intentar borrar las claves. Verifica los permisos."
+                    fi
+                else
+                    echo "Operación cancelada. Las claves no se han borrado."
+                fi
+            else
+                echo ""
+                echo "Ficheros de certificados del servidor no encontrados:"
+                [ ! -f "$SERVER_KEY" ] && echo "- No existe: $SERVER_KEY"
+                [ ! -f "$SERVER_PUB" ] && echo "- No existe: $SERVER_PUB"
+                echo "Por favor, verifica los nombres introducidos."
+            fi
+
+            read -n1 -r -p "Presione [Enter] para continuar..."
+        ;;
+
         0|quit|exit)
             echo "Saliendo del script..."
             exit 0
@@ -324,6 +415,6 @@ while true; do
         *)
             echo "Opcion no valida. Intente nuevamente."
             read -n1 -r -p "Presione [Enter] para continuar..."
-            ;;
+        ;;
     esac
 done
