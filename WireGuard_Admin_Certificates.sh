@@ -114,49 +114,55 @@ while true; do
 
         4)
             echo ""
-            echo "Comprobando pared de claves del servidor..."
+            echo "Comprobando par de claves del servidor..."
             echo ""
 
-            SERVER_KEY="/etc/wireguard/server.key"
-            SERVER_PUB="/etc/wireguard/server.pub"
+            read -p "Escribe el nombre del fichero .key (sin la extensión) alojado en la ruta /etc/wirewguard/: " KEY_NAME
+            read -p "Escribe el nombre del fichero .pub (sin la extensión) alojado en la ruta /etc/wirewguard/: " PUB_NAME
 
+            SERVER_KEY="/etc/wireguard/${KEY_NAME}.key"
+            SERVER_PUB="/etc/wireguard/${PUB_NAME}.pub"
             if [ -f "$SERVER_KEY" ] && [ -f "$SERVER_PUB" ]; then
-                echo "El servidor tiene ficheros de certificados creados."
+                echo ""
+                echo "Los ficheros de claves del servidor existen:"
+                echo "- Clave privada: $SERVER_KEY"
+                echo "- Clave pública: $SERVER_PUB"
                 echo ""
 
                 # Verificar formato de la clave privada
                 if grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$SERVER_KEY" && [ $(wc -c < "$SERVER_KEY") -eq 45 ]; then
-                    echo " - OK: La clave PRIVADA del servidor tiene el formato correcto."
+                    echo " - OK: La clave PRIVADA tiene el formato correcto."
                 else
-                    echo " - ALERTA: La clave PRIVADA del servidor tiene un formato INCORRECTO."
+                    echo " - ALERTA: La clave PRIVADA tiene un formato INCORRECTO."
                 fi
 
                 # Verificar formato de la clave publica
                 if grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$SERVER_PUB" && [ $(wc -c < "$SERVER_PUB") -eq 45 ]; then
-                    echo " - OK: La clave PUBLICA del servidor tiene el formato correcto."
+                    echo " - OK: La clave PUBLICA tiene el formato correcto."
                     echo ""
                 else
-                    echo " - ALERTA: La clave PUBLICA del servidor tiene un formato INCORRECTO."
+                    echo " - ALERTA: La clave PUBLICA tiene un formato INCORRECTO."
                     echo ""
                 fi
 
                 # Verificar que la clave publica corresponde a la privada
                 echo "TOTAL:"
                 if [ "$(cat "$SERVER_KEY" | wg pubkey)" == "$(cat "$SERVER_PUB")" ]; then
-                    echo " - OK: Las claves del servidor son CORRESPONDIENTES (la publica deriva de la privada)."
+                    echo " - OK: Las claves son CORRESPONDIENTES (la publica deriva de la privada)."
                 else
-                    echo " - ALERTA: Las claves del servidor NO CORRESPONDEN entre sí."
+                    echo " - ALERTA: Las claves NO CORRESPONDEN entre sí."
                     echo ""
                 fi
             else
-                echo "Ficheros de certificados del servidor incorrectos:"
-                [ ! -f "$SERVER_KEY" ] && echo "- Falta el fichero server.key"
-                [ ! -f "$SERVER_PUB" ] && echo "- Falta el fichero server.pub"
+                echo ""
+                echo "Ficheros de certificados del servidor no encontrados:"
+                [ ! -f "$SERVER_KEY" ] && echo "- No existe: $SERVER_KEY"
+                [ ! -f "$SERVER_PUB" ] && echo "- No existe: $SERVER_PUB"
+                echo "Por favor, verifica los nombres introducidos."
             fi
 
             read -n1 -r -p "Presione [Enter] para continuar..."
             ;;
-
         5)
             echo ""
             echo "Creando par de claves del servidor..."
