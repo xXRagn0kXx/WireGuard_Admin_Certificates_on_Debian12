@@ -22,7 +22,7 @@ while true; do
             echo "Opcion seleccionada crear ficheros de cliente VPN"
             echo "Si no tiene nombre poner [user] "
             read -p "Ingrese el nombre del cliente VPN: " USUARIO
-            
+
 
             if [ -z "$USUARIO" ]; then
                 echo "El nombre del cliente no puede estar vacío."
@@ -31,7 +31,7 @@ while true; do
             fi
 
             RUTA="/etc/wireguard/clients/${USUARIO}"
-            echo " Creando la ruta para el cliente ${USUARIO} " 
+            echo " Creando la ruta para el cliente ${USUARIO} "
             mkdir -p "$RUTA"
             echo " Generando pares de claves... "
             wg genkey | tee "${RUTA}/${USUARIO}.key" > /dev/null
@@ -101,23 +101,56 @@ while true; do
             read -p "Ingrese el nombre del cliente a borrar: " USUARIO
 
             if [ -z "$USUARIO" ]; then
-                echo "El nombre del cliente no puede estar vacio."
+                echo "El nombre del cliente no puede estar vacío."
                 read -n1 -r -p "Presione [Enter] para continuar..."
                 continue
             fi
 
             RUTA="/etc/wireguard/clients/${USUARIO}"
+            CLIENT_KEY="${RUTA}/${USUARIO}.key"
+            CLIENT_PUB="${RUTA}/${USUARIO}.pub"
 
-            if [ -d "$RUTA" ]; then
+            # Comprobar si existe el directorio
+            if [ ! -d "$RUTA" ]; then
+                echo "El directorio del cliente '${USUARIO}' no existe."
+                read -n1 -r -p "Presione [Enter] para continuar..."
+                continue
+            fi
+
+            # Comprobar si existen los ficheros de certificado
+            if [ ! -f "$CLIENT_KEY" ] || [ ! -f "$CLIENT_PUB" ]; then
+                echo "Advertencia: El directorio del cliente '${USUARIO}' no contiene ficheros de certificado válidos."
+                echo "Pero el directorio existe y puede contener otros archivos."
+                read -p "¿Desea borrar TODO el contenido del directorio '${USUARIO}'? [y/N]: " CONFIRM
+                if [[ "$CONFIRM" =~ [yYsS] ]]; then
+                    rm -rf "$RUTA"
+                    if [ $? -eq 0 ]; then
+                        echo "Directorio del cliente '${USUARIO}' borrado completamente."
+                    else
+                        echo "Error al borrar el directorio."
+                    fi
+                else
+                    echo "Operación cancelada."
+                fi
+                read -n1 -r -p "Presione [Enter] para continuar..."
+                continue
+            fi
+
+            # Si existen los certificados, pedir confirmación para borrar
+            read -p "¿Está seguro que desea borrar los certificados y el directorio del cliente '${USUARIO}'? [y/N]: " CONFIRM
+            if [[ "$CONFIRM" =~ [yYsS] ]]; then
                 rm -rf "$RUTA"
-                echo "Ficheros del cliente '${USUARIO}' borrados correctamente."
+                if [ $? -eq 0 ]; then
+                    echo "Ficheros y directorio del cliente '${USUARIO}' borrados correctamente."
+                else
+                    echo "Error al borrar los ficheros."
+                fi
             else
-                echo "Los ficheros del cliente '${USUARIO}' no existen o ya estan borrados."
+                echo "Operación cancelada."
             fi
 
             read -n1 -r -p "Presione [Enter] para continuar..."
             ;;
-
         4)
             echo ""
             echo "Comprobando par de claves del servidor..."
