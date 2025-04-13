@@ -163,17 +163,28 @@ while true; do
 
             read -n1 -r -p "Presione [Enter] para continuar..."
             ;;
+
         5)
             echo ""
             echo "Creando par de claves del servidor..."
             echo ""
 
-            SERVER_KEY="/etc/wireguard/server.key"
-            SERVER_PUB="/etc/wireguard/server.pub"
+            # Preguntar por los nombres de los ficheros (con valores por defecto)
+            read -p "Escribe el nombre para el fichero .key (sin extensión) [por defecto: server]: " KEY_NAME
+            read -p "Escribe el nombre para el fichero .pub (sin extensión) [por defecto: server]: " PUB_NAME
+
+            # Establecer valores por defecto si el usuario no introduce nada
+            KEY_NAME=${KEY_NAME:-server}
+            PUB_NAME=${PUB_NAME:-server}
+
+            SERVER_KEY="/etc/wireguard/${KEY_NAME}.key"
+            SERVER_PUB="/etc/wireguard/${PUB_NAME}.pub"
 
             # Comprobar si ya existen los ficheros con formato correcto
             if [ -f "$SERVER_KEY" ] && [ -f "$SERVER_PUB" ]; then
-                echo "Los ficheros de claves del servidor ya existen."
+                echo "Los ficheros de claves del servidor ya existen:"
+                echo "- Clave privada: $SERVER_KEY"
+                echo "- Clave pública: $SERVER_PUB"
 
                 # Verificar si tienen el formato correcto
                 KEY_VALID=$(grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$SERVER_KEY" && [ $(wc -c < "$SERVER_KEY") -eq 45 ] && echo "true")
@@ -197,7 +208,9 @@ while true; do
             else
                 # Crear directorio si no existe
                 mkdir -p "/etc/wireguard/"
-                echo "Creando nuevas claves para el servidor..."
+                echo "Creando nuevas claves para el servidor en:"
+                echo "- Clave privada: $SERVER_KEY"
+                echo "- Clave pública: $SERVER_PUB"
 
                 # Generar claves
                 wg genkey | tee "$SERVER_KEY" > /dev/null
@@ -205,9 +218,7 @@ while true; do
 
                 # Verificar que se crearon correctamente
                 if [ -f "$SERVER_KEY" ] && [ -f "$SERVER_PUB" ]; then
-                    echo " - Las claves del servidor se han creado correctamente en:"
-                    echo "   - Clave privada: $SERVER_KEY"
-                    echo "   - Clave publica: $SERVER_PUB"
+                    echo " - Las claves del servidor se han creado correctamente."
 
                     # Verificar formato
                     if grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$SERVER_KEY" && [ $(wc -c < "$SERVER_KEY") -eq 45 ]; then
@@ -234,7 +245,7 @@ while true; do
             fi
 
             read -n1 -r -p "Presione [Enter] para continuar..."
-            ;;
+        ;;
 
         0|quit|exit)
             echo "Saliendo del script..."
