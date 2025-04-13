@@ -117,11 +117,17 @@ while true; do
             echo "Comprobando par de claves del servidor..."
             echo ""
 
-            read -p "Escribe el nombre del fichero .key (sin la extensión) alojado en la ruta /etc/wirewguard/: " KEY_NAME
-            read -p "Escribe el nombre del fichero .pub (sin la extensión) alojado en la ruta /etc/wirewguard/: " PUB_NAME
+            # Preguntar por los nombres de los ficheros con valores por defecto
+            read -p "Escribe el nombre del fichero .key (sin la extensión) alojado en la ruta /etc/wireguard/ [por defecto: server.key]: " KEY_NAME
+            read -p "Escribe el nombre del fichero .pub (sin la extensión) alojado en la ruta /etc/wireguard/ [por defecto: server.pub]: " PUB_NAME
+
+            # Establecer valores por defecto si el usuario no introduce nada
+            KEY_NAME=${KEY_NAME:-server}
+            PUB_NAME=${PUB_NAME:-server}
 
             SERVER_KEY="/etc/wireguard/${KEY_NAME}.key"
             SERVER_PUB="/etc/wireguard/${PUB_NAME}.pub"
+
             if [ -f "$SERVER_KEY" ] && [ -f "$SERVER_PUB" ]; then
                 echo ""
                 echo "Los ficheros de claves del servidor existen:"
@@ -162,16 +168,15 @@ while true; do
             fi
 
             read -n1 -r -p "Presione [Enter] para continuar..."
-            ;;
-
+          ;;
         5)
             echo ""
             echo "Creando par de claves del servidor..."
             echo ""
 
             # Preguntar por los nombres de los ficheros (con valores por defecto)
-            read -p "Escribe el nombre para el fichero .key (sin extensión) [por defecto: server]: " KEY_NAME
-            read -p "Escribe el nombre para el fichero .pub (sin extensión) [por defecto: server]: " PUB_NAME
+            read -p "Escribe el nombre para el fichero .key (sin extension) [por defecto: server]: " KEY_NAME
+            read -p "Escribe el nombre para el fichero .pub (sin extension) [por defecto: server]: " PUB_NAME
 
             # Establecer valores por defecto si el usuario no introduce nada
             KEY_NAME=${KEY_NAME:-server}
@@ -184,7 +189,7 @@ while true; do
             if [ -f "$SERVER_KEY" ] && [ -f "$SERVER_PUB" ]; then
                 echo "Los ficheros de claves del servidor ya existen:"
                 echo "- Clave privada: $SERVER_KEY"
-                echo "- Clave pública: $SERVER_PUB"
+                echo "- Clave publica: $SERVER_PUB"
 
                 # Verificar si tienen el formato correcto
                 KEY_VALID=$(grep -qE '^[A-Za-z0-9+/]{42,44}={0,2}$' "$SERVER_KEY" && [ $(wc -c < "$SERVER_KEY") -eq 45 ] && echo "true")
@@ -192,7 +197,7 @@ while true; do
 
                 if [ "$KEY_VALID" = "true" ] && [ "$PUB_VALID" = "true" ]; then
                     echo " - Las claves existentes tienen el formato correcto."
-                    echo " - No se realizará ninguna acción para evitar sobrescribirlas."
+                    echo " - No se realizara ninguna accion para evitar sobrescribirlas."
                 else
                     echo " - ALERTA: Las claves existentes tienen formato incorrecto."
                     read -p "¿Desea sobrescribirlas? [y/N]: " CONFIRM
@@ -200,7 +205,7 @@ while true; do
                         # Continuar con la creación
                         echo " - Sobrescribiendo claves existentes..."
                     else
-                        echo " - Operación cancelada."
+                        echo " - Operacion cancelada."
                         read -n1 -r -p "Presione [Enter] para continuar..."
                         continue
                     fi
@@ -210,7 +215,7 @@ while true; do
                 mkdir -p "/etc/wireguard/"
                 echo "Creando nuevas claves para el servidor en:"
                 echo "- Clave privada: $SERVER_KEY"
-                echo "- Clave pública: $SERVER_PUB"
+                echo "- Clave publica: $SERVER_PUB"
 
                 # Generar claves
                 wg genkey | tee "$SERVER_KEY" > /dev/null
@@ -253,7 +258,7 @@ while true; do
             ;;
 
         *)
-            echo "Opción no válida. Intente nuevamente."
+            echo "Opcion no valida. Intente nuevamente."
             read -n1 -r -p "Presione [Enter] para continuar..."
             ;;
     esac
