@@ -23,7 +23,6 @@ while true; do
             echo "Si no tiene nombre poner [user] "
             read -p "Ingrese el nombre del cliente VPN: " USUARIO
 
-
             if [ -z "$USUARIO" ]; then
                 echo "El nombre del cliente no puede estar vacío."
                 read -n1 -r -p "Presione [Enter] para continuar..."
@@ -31,16 +30,41 @@ while true; do
             fi
 
             RUTA="/etc/wireguard/clients/${USUARIO}"
-            echo " Creando la ruta para el cliente ${USUARIO} "
+            CLIENT_KEY="${RUTA}/${USUARIO}.key"
+            CLIENT_PUB="${RUTA}/${USUARIO}.pub"
+
+            # Comprobar si el directorio o certificados ya existen
+            if [ -d "$RUTA" ]; then
+                echo ""
+                echo "ADVERTENCIA: El directorio para el cliente '${USUARIO}' ya existe."
+
+                if [ -f "$CLIENT_KEY" ] || [ -f "$CLIENT_PUB" ]; then
+                    echo "Se han encontrado certificados existentes:"
+                    [ -f "$CLIENT_KEY" ] && echo "- ${CLIENT_KEY}"
+                    [ -f "$CLIENT_PUB" ] && echo "- ${CLIENT_PUB}"
+
+                    read -p "¿Desea sobrescribir los certificados existentes? [y/N]: " CONFIRM
+                    if [[ ! "$CONFIRM" =~ [yYsS] ]]; then
+                        echo "Operación cancelada. No se modificaron los certificados."
+                        read -n1 -r -p "Presione [Enter] para continuar..."
+                        continue
+                    fi
+                fi
+            fi
+
+            # Crear directorio (o continuar si ya existe)
             mkdir -p "$RUTA"
-            echo " Generando pares de claves... "
-            wg genkey | tee "${RUTA}/${USUARIO}.key" > /dev/null
-            cat "${RUTA}/${USUARIO}.key" | wg pubkey | tee "${RUTA}/${USUARIO}.pub" > /dev/null
+            echo "Generando pares de claves..."
+            wg genkey | tee "${CLIENT_KEY}" > /dev/null
+            cat "${CLIENT_KEY}" | wg pubkey | tee "${CLIENT_PUB}" > /dev/null
 
-            echo "Se crean los pares de claves para el cliente '${USUARIO}' en la ruta ${RUTA}."
+            echo ""
+            echo "Se han creado los certificados para el cliente '${USUARIO}' en:"
+            echo "- Clave privada: ${CLIENT_KEY}"
+            echo "- Clave pública: ${CLIENT_PUB}"
+
             read -n1 -r -p "Presione [Enter] para continuar..."
-            ;;
-
+           ;;
         2)
             read -p "Ingrese el nombre del cliente a comprobar: " USUARIO
             echo""
