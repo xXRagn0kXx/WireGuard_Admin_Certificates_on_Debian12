@@ -18,7 +18,11 @@ while true; do
 
     case "$OPCION" in
         1)
+            echo ""
+            echo "Opcion seleccionada crear ficheros de cliente VPN"
+            echo "Si no tiene nombre poner [user] "
             read -p "Ingrese el nombre del cliente VPN: " USUARIO
+            
 
             if [ -z "$USUARIO" ]; then
                 echo "El nombre del cliente no puede estar vacío."
