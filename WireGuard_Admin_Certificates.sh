@@ -233,8 +233,8 @@ while true; do
                                 echo " - ALERTA: El fichero de configuración $WG_CONF no existe."
                         else
 
-                # Comprobar que la clave privada está dentro del fichero de configuración
-                        if grep -qF "$(cat "$SERVER_KEY")" "$WG_CONF"; then
+                # Comprobar que la clave privada encontrada fichero de configuracion esta correcta
+                        if grep -q "^PrivateKey = $(cat "$SERVER_KEY")" "$WG_CONF"; then
                                 echo " - OK: Los pares de claves están correctos y la clave está instalada en el fichero de configuración VPN ($WG_CONF_NAME)."
                         else
                                 echo " - ALERTA: La clave privada del servidor ${KEY_NAME}.key no está instalada en el fichero ${WG_CONF_NAME}."
