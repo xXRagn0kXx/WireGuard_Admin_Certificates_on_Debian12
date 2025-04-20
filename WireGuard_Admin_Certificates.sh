@@ -237,7 +237,7 @@ while true; do
                         if grep -q "^PrivateKey = $(cat "$SERVER_KEY")" "$WG_CONF"; then
                                 echo " - OK: Los pares de claves están correctos y la clave está instalada en el fichero de configuración VPN ($WG_CONF_NAME)."
                         else
-                                echo " - ALERTA: La clave privada del servidor ${KEY_NAME}.key no está instalada en el fichero ${WG_CONF_NAME}."
+                                echo " - ALERTA: La clave privada del servidor ${KEY_NAME}.key no está instalada en el fichero ${WG_CONF_NAME}.conf"
                         fi
                 fi
                 else
@@ -413,7 +413,7 @@ while true; do
                                 fi
                         else
                                 echo ""
-                                echo "Ficheros de certificados del servidor no encontrados:"
+                               echo "Ficheros de certificados del servidor no encontrados:"
                                 [ ! -f "$SERVER_KEY" ] && echo "- No existe: $SERVER_KEY"
                                 [ ! -f "$SERVER_PUB" ] && echo "- No existe: $SERVER_PUB"
                                         echo "Por favor, verifica los nombres introducidos."
