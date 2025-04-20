@@ -191,7 +191,7 @@ while true; do
                 # Establecer valores por defecto si el usuario no introduce nada
                         KEY_NAME=${KEY_NAME:-server}
                         PUB_NAME=${PUB_NAME:-server}
-                        WG_CONF_NAME=${WG_CONF_NAME:-wg0.conf}
+                        WG_CONF_NAME=${WG_CONF_NAME:-wg0}
                         SERVER_KEY="/etc/wireguard/${KEY_NAME}.key"
                         SERVER_PUB="/etc/wireguard/${PUB_NAME}.pub"
                         WG_CONF="/etc/wireguard/${WG_CONF_NAME}.conf"
